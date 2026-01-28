@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Import">
+    <meta name="theme-color" content="#000000">
+    <meta name="description" content="Kalkulator kosztów importu pojazdów z UE">
+    
+    <!-- iOS Icons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="icon-167.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="icon-152.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="icon-120.png">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <title>Kalkulator Importu</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --safe-top: env(safe-area-inset-top);
+            --safe-bottom: env(safe-area-inset-bottom);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+            background: #000;
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+            padding-top: var(--safe-top);
+            padding-bottom: var(--safe-bottom);
+        }
+
+        .app {
+            max-width: 430px;
+            margin: 0 auto;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: 0.75rem;
+        }
+
+        header {
+            text-align: center;
+            padding: 0.5rem 0;
+            flex-shrink: 0;
+        }
+
+        h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .rate-card {
+            background: #1c1c1e;
+            border-radius: 10px;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .rate-display {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+        }
+
+        .rate-label {
+            font-size: 0.8125rem;
+            color: #888;
+            font-weight: 500;
+        }
+
+        .rate-value {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        .rate-input-group {
+            display: flex;
+            gap: 0.375rem;
+            align-items: center;
+        }
+
+        .rate-input-group input {
+            width: 70px;
+            background: #2c2c2e;
+            border: none;
+            border-radius: 6px;
+            padding: 0.5rem 0.375rem;
+            color: #fff;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .rate-input-group button {
+            background: #007aff;
+            border: none;
+            border-radius: 6px;
+            padding: 0.5rem 0.75rem;
+            color: #fff;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .card {
+            background: #1c1c1e;
+            border-radius: 10px;
+            padding: 0.875rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .card-title {
+            font-size: 0.9375rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            letter-spacing: -0.2px;
+        }
+
+        .form-group {
+            margin-bottom: 0.75rem;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            font-size: 0.6875rem;
+            color: #888;
+            font-weight: 500;
+            margin-bottom: 0.375rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        input, select {
+            width: 100%;
+            background: #2c2c2e;
+            border: 2px solid transparent;
+            border-radius: 6px;
+            padding: 0.625rem 0.5rem;
+            color: #fff;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            -webkit-appearance: none;
+            transition: all 0.2s ease;
+        }
+
+        input.error, select.error {
+            border-color: #ff3b30;
+            background: rgba(255, 59, 48, 0.1);
+            animation: shake 0.3s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        input::placeholder {
+            color: #636366;
+        }
+
+        select {
+            background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23888' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.625rem center;
+            padding-right: 2rem;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            width: 100%;
+            background: #007aff;
+            border: none;
+            border-radius: 10px;
+            padding: 0.875rem;
+            color: #fff;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 0.75rem;
+        }
+
+        .results {
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.625rem 0;
+            border-bottom: 1px solid #2c2c2e;
+        }
+
+        .result-row:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-size: 0.8125rem;
+            color: #888;
+            font-weight: 500;
+        }
+
+        .result-value {
+            font-size: 0.9375rem;
+            font-weight: 600;
+        }
+
+        .result-total {
+            margin-top: 0.5rem;
+            padding-top: 0.625rem;
+            border-top: 2px solid #007aff;
+        }
+
+        .result-total .result-label {
+            font-size: 1rem;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .result-total .result-value {
+            font-size: 1.375rem;
+            color: #007aff;
+            font-weight: 700;
+        }
+
+        @media (max-height: 700px) {
+            header {
+                padding: 0.25rem 0;
+            }
+            h1 {
+                font-size: 1.125rem;
+            }
+            .card {
+                padding: 0.75rem;
+                margin-bottom: 0.5rem;
+            }
+            .form-group {
+                margin-bottom: 0.625rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <header>
+            <h1>🚗 Kalkulator Importu</h1>
+        </header>
+
+        <div class="content">
+            <div class="rate-card">
+                <div class="rate-display">
+                    <span class="rate-label">AUTO1 EUR/PLN</span>
+                    <span class="rate-value" id="exchangeRate">—</span>
+                </div>
+                <div class="rate-input-group">
+                    <input type="number" id="manualRate" step="0.0001" placeholder="4.22" inputmode="decimal">
+                    <button type="button" id="updateRate">OK</button>
+                </div>
+            </div>
+
+            <form id="calculatorForm">
+                <div class="card">
+                    <div class="card-title">Podstawowe</div>
+                    
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>Koszt (EUR)</label>
+                            <input type="number" id="carCost" placeholder="1744" step="0.01" required inputmode="decimal">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Transport (EUR)</label>
+                            <input type="number" id="transport" placeholder="537" step="0.01" required inputmode="decimal">
+                        </div>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>Kraj</label>
+                            <select id="country" required>
+                                <option value="">—</option>
+                                <option value="AT|468">Austria (468)</option>
+                                <option value="BE|448">Belgia (448)</option>
+                                <option value="DE|448">Niemcy (448)</option>
+                                <option value="DK|408">Dania (408)</option>
+                                <option value="ES|534">Hiszpania (534)</option>
+                                <option value="FI|368">Finlandia (368)</option>
+                                <option value="FR|418">Francja (418)</option>
+                                <option value="IT|628">Włochy (628)</option>
+                                <option value="NL|474">Holandia (474)</option>
+                                <option value="PL|278">Polska (278)</option>
+                                <option value="PT|408">Portugalia (408)</option>
+                                <option value="SE|461">Szwecja (461)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Akcyza</label>
+                            <select id="exciseTax" required>
+                                <option value="">—</option>
+                                <option value="0.031">3.1%</option>
+                                <option value="0.185">18.5%</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Dodatkowe (PLN)</div>
+                    
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>Przegląd</label>
+                            <input type="number" id="inspection" value="149" step="0.01" inputmode="decimal">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Ubezpieczenie</label>
+                            <input type="number" id="insurance" value="98" step="0.01" inputmode="decimal">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Rejestracja</label>
+                            <input type="number" id="registration" value="162.5" step="0.01" inputmode="decimal">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Pranie</label>
+                            <input type="number" id="cleaning" value="250" step="0.01" inputmode="decimal">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Naprawy</label>
+                            <input type="number" id="repairs" value="0" step="0.01" inputmode="decimal">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Inne wydatki</label>
+                            <input type="number" id="other" value="0" step="0.01" inputmode="decimal">
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary">Oblicz koszty</button>
+            </form>
+
+            <div id="results" class="results">
+                <div class="card">
+                    <div class="card-title">Podsumowanie</div>
+                    
+                    <div class="result-row">
+                        <span class="result-label">Pojazd</span>
+                        <span class="result-value" id="resultCarCost">—</span>
+                    </div>
+                    
+                    <div class="result-row">
+                        <span class="result-label">Dokumenty</span>
+                        <span class="result-value" id="resultCountryCost">—</span>
+                    </div>
+                    
+                    <div class="result-row">
+                        <span class="result-label">Transport</span>
+                        <span class="result-value" id="resultTransport">—</span>
+                    </div>
+                    
+                    <div class="result-row">
+                        <span class="result-label">Akcyza</span>
+                        <span class="result-value" id="resultExcise">—</span>
+                    </div>
+                    
+                    <div class="result-row">
+                        <span class="result-label">Dodatkowe</span>
+                        <span class="result-value" id="resultAdditional">—</span>
+                    </div>
+
+                    <div class="result-total result-row">
+                        <span class="result-label">Razem</span>
+                        <span class="result-value" id="resultTotal">—</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
