@@ -5,24 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Import">
-    <meta name="theme-color" content="#000000">
-    <meta name="description" content="Kalkulator kosztów importu pojazdów z UE">
-    
-    <!-- iOS Icons -->
-    <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
-    <link rel="apple-touch-icon" sizes="167x167" href="icon-167.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="icon-152.png">
-    <link rel="apple-touch-icon" sizes="120x120" href="icon-120.png">
-    
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
-    
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="manifest.json">
-    
-    <title>Kalkulator Importu</title>
+    <meta name="apple-mobile-web-app-title" content="Import Pro">
+    <title>Kalkulator Importu PRO</title>
     <style>
         * {
             margin: 0;
@@ -34,397 +18,863 @@
         :root {
             --safe-top: env(safe-area-inset-top);
             --safe-bottom: env(safe-area-inset-bottom);
+            --primary: #007aff;
+            --success: #34c759;
+            --warning: #ff9500;
+            --danger: #ff3b30;
+            --bg-dark: #000;
+            --bg-card: #1c1c1e;
+            --bg-secondary: #2c2c2e;
+            --text-primary: #fff;
+            --text-secondary: #8e8e93;
+            --border: #38383a;
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-            background: #000;
-            color: #fff;
-            height: 100vh;
-            overflow: hidden;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
             padding-top: var(--safe-top);
             padding-bottom: var(--safe-bottom);
         }
 
-        .app {
-            max-width: 430px;
+        .container {
+            max-width: 1400px;
             margin: 0 auto;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            padding: 0.75rem;
+            padding: 1.5rem;
         }
 
+        /* Header */
         header {
             text-align: center;
-            padding: 0.5rem 0;
-            flex-shrink: 0;
+            padding: 2rem 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 2rem;
         }
 
         h1 {
-            font-size: 1.25rem;
-            font-weight: 700;
-            letter-spacing: -0.3px;
+            font-size: clamp(1.75rem, 5vw, 2.5rem);
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--primary), var(--success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
-        .content {
-            flex: 1;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .rate-card {
-            background: #1c1c1e;
-            border-radius: 10px;
-            padding: 0.75rem;
-            margin-bottom: 0.75rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .rate-display {
-            display: flex;
-            align-items: baseline;
-            gap: 0.5rem;
-        }
-
-        .rate-label {
-            font-size: 0.8125rem;
-            color: #888;
+        .subtitle {
+            font-size: 1rem;
+            color: var(--text-secondary);
             font-weight: 500;
         }
 
-        .rate-value {
-            font-size: 1.125rem;
-            font-weight: 600;
-        }
-
-        .rate-input-group {
+        /* Mode Toggle */
+        .mode-toggle {
             display: flex;
-            gap: 0.375rem;
-            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
         }
 
-        .rate-input-group input {
-            width: 70px;
-            background: #2c2c2e;
-            border: none;
-            border-radius: 6px;
-            padding: 0.5rem 0.375rem;
-            color: #fff;
-            font-size: 0.875rem;
-            font-weight: 500;
-            text-align: center;
-        }
-
-        .rate-input-group button {
-            background: #007aff;
-            border: none;
-            border-radius: 6px;
-            padding: 0.5rem 0.75rem;
-            color: #fff;
-            font-size: 0.8125rem;
+        .mode-btn {
+            padding: 0.875rem 2rem;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .mode-btn.active {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Sections */
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        /* Simple Calculator */
+        .simple-calc-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (min-width: 1024px) {
+            .simple-calc-grid {
+                grid-template-columns: 1fr 1fr;
+            }
         }
 
         .card {
-            background: #1c1c1e;
-            border-radius: 10px;
-            padding: 0.875rem;
-            margin-bottom: 0.75rem;
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid var(--border);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .card-icon {
+            font-size: 1.5rem;
         }
 
         .card-title {
-            font-size: 0.9375rem;
-            font-weight: 600;
-            margin-bottom: 0.75rem;
-            letter-spacing: -0.2px;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary);
         }
 
         .form-group {
-            margin-bottom: 0.75rem;
-        }
-
-        .form-group:last-child {
-            margin-bottom: 0;
+            margin-bottom: 1.25rem;
         }
 
         label {
             display: block;
-            font-size: 0.6875rem;
-            color: #888;
-            font-weight: 500;
-            margin-bottom: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
             text-transform: uppercase;
-            letter-spacing: 0.3px;
+            letter-spacing: 0.5px;
         }
 
         input, select {
             width: 100%;
-            background: #2c2c2e;
-            border: 2px solid transparent;
-            border-radius: 6px;
-            padding: 0.625rem 0.5rem;
-            color: #fff;
-            font-size: 0.9375rem;
+            padding: 0.875rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 1rem;
             font-weight: 500;
-            -webkit-appearance: none;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
         }
 
-        input.error, select.error {
-            border-color: #ff3b30;
-            background: rgba(255, 59, 48, 0.1);
-            animation: shake 0.3s ease;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
-
-        input::placeholder {
-            color: #636366;
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2);
         }
 
         select {
-            background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23888' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%23007aff' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
-            background-position: right 0.625rem center;
-            padding-right: 2rem;
+            background-position: right 1rem center;
+            padding-right: 3rem;
         }
 
         .grid-2 {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 0.5rem;
+            gap: 1rem;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 1.125rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.125rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .btn-primary {
+            background: linear-gradient(135deg, var(--primary), #0051d5);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 122, 255, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Results Table */
+        .results-table {
             width: 100%;
-            background: #007aff;
-            border: none;
-            border-radius: 10px;
-            padding: 0.875rem;
-            color: #fff;
-            font-size: 0.9375rem;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 0.75rem;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 1.5rem;
         }
 
-        .results {
-            display: none;
+        .results-table tr {
+            border-bottom: 1px solid var(--border);
         }
 
-        .results.show {
-            display: block;
-        }
-
-        .result-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.625rem 0;
-            border-bottom: 1px solid #2c2c2e;
-        }
-
-        .result-row:last-child {
+        .results-table tr:last-child {
             border-bottom: none;
         }
 
-        .result-label {
-            font-size: 0.8125rem;
-            color: #888;
+        .results-table td {
+            padding: 1rem 0;
+        }
+
+        .results-table td:first-child {
+            color: var(--text-secondary);
             font-weight: 500;
         }
 
-        .result-value {
-            font-size: 0.9375rem;
-            font-weight: 600;
-        }
-
-        .result-total {
-            margin-top: 0.5rem;
-            padding-top: 0.625rem;
-            border-top: 2px solid #007aff;
-        }
-
-        .result-total .result-label {
-            font-size: 1rem;
-            color: #fff;
-            font-weight: 600;
-        }
-
-        .result-total .result-value {
-            font-size: 1.375rem;
-            color: #007aff;
+        .results-table td:last-child {
+            text-align: right;
             font-weight: 700;
+            font-size: 1.125rem;
         }
 
-        @media (max-height: 700px) {
+        .results-table .total-row {
+            border-top: 2px solid var(--primary);
+        }
+
+        .results-table .total-row td {
+            padding-top: 1.5rem;
+            font-size: 1.25rem;
+            font-weight: 800;
+        }
+
+        .results-table .total-row td:last-child {
+            color: var(--primary);
+            font-size: 1.75rem;
+        }
+
+        /* AI Analysis Section */
+        .api-config {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .api-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .api-input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+        }
+
+        .upload-zone {
+            background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-secondary) 100%);
+            border: 2px dashed var(--primary);
+            border-radius: 16px;
+            padding: 3rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 2rem;
+        }
+
+        .upload-zone:hover {
+            border-color: var(--success);
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, #3c3c3e 100%);
+        }
+
+        .upload-zone.dragging {
+            border-color: var(--success);
+            background: rgba(52, 199, 89, 0.1);
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .upload-text {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-hint {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+        }
+
+        .thumbnails {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .thumbnail {
+            position: relative;
+            aspect-ratio: 1;
+            border-radius: 12px;
+            overflow: hidden;
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+        }
+
+        .thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .thumbnail-remove {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .analyzing {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 3rem 2rem;
+            text-align: center;
+            margin: 2rem 0;
+            display: none;
+        }
+
+        .analyzing.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid var(--bg-secondary);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1.5rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .analyzing-text {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* Analysis Results */
+        .analysis-results {
+            display: none;
+        }
+
+        .analysis-results.show {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        @media (min-width: 1024px) {
+            .analysis-results.show {
+                grid-template-columns: 1fr 1.5fr;
+            }
+        }
+
+        .recommendation-box {
+            background: linear-gradient(135deg, rgba(52, 199, 89, 0.2) 0%, rgba(52, 199, 89, 0.05) 100%);
+            border: 2px solid var(--success);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .recommendation-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.875rem;
+            color: var(--success);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+        }
+
+        .recommendation-text {
+            font-size: 1.125rem;
+            line-height: 1.7;
+            font-weight: 500;
+        }
+
+        .info-grid {
+            display: grid;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .info-card {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.25rem;
+            border: 1px solid var(--border);
+        }
+
+        .info-card-label {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-card-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .section-block {
+            margin-bottom: 2rem;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .section-content {
+            font-size: 1rem;
+            line-height: 1.8;
+            color: var(--text-primary);
+        }
+
+        .section-content ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .section-content li {
+            padding: 0.75rem 0;
+            padding-left: 2rem;
+            position: relative;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section-content li:last-child {
+            border-bottom: none;
+        }
+
+        .section-content li::before {
+            content: '●';
+            position: absolute;
+            left: 0.75rem;
+            color: var(--primary);
+            font-size: 0.75rem;
+        }
+
+        .price-display {
+            text-align: center;
+            padding: 2rem;
+            background: linear-gradient(135deg, var(--bg-card), var(--bg-secondary));
+            border-radius: 16px;
+            margin-bottom: 2rem;
+        }
+
+        .price-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.75rem;
+        }
+
+        .price-value {
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--success);
+            margin-bottom: 1rem;
+        }
+
+        .profit-badge {
+            display: inline-block;
+            background: rgba(52, 199, 89, 0.2);
+            color: var(--success);
+            padding: 0.75rem 1.5rem;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 1.125rem;
+        }
+
+        .strategy-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .strategy-card {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.75rem;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .strategy-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-4px);
+        }
+
+        .strategy-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .strategy-title {
+            font-size: 0.875rem;
+            color: var(--primary);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.75rem;
+        }
+
+        .strategy-content {
+            font-size: 0.9375rem;
+            line-height: 1.7;
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 767px) {
+            .container {
+                padding: 1rem;
+            }
+
             header {
-                padding: 0.25rem 0;
+                padding: 1.5rem 0;
             }
-            h1 {
-                font-size: 1.125rem;
-            }
+
             .card {
-                padding: 0.75rem;
-                margin-bottom: 0.5rem;
+                padding: 1.5rem;
             }
-            .form-group {
-                margin-bottom: 0.625rem;
+
+            .grid-2 {
+                grid-template-columns: 1fr;
             }
+
+            .mode-toggle {
+                flex-direction: column;
+            }
+
+            .price-value {
+                font-size: 2rem;
+            }
+        }
+
+        .hidden {
+            display: none;
         }
     </style>
 </head>
 <body>
-    <div class="app">
+    <div class="container">
         <header>
-            <h1>🚗 Kalkulator Importu</h1>
+            <h1>🚗 Kalkulator Importu PRO</h1>
+            <div class="subtitle">Profesjonalne narzędzie dla importerów</div>
         </header>
 
-        <div class="content">
-            <div class="rate-card">
-                <div class="rate-display">
-                    <span class="rate-label">AUTO1 EUR/PLN</span>
-                    <span class="rate-value" id="exchangeRate">—</span>
+        <!-- Mode Toggle -->
+        <div class="mode-toggle">
+            <button class="mode-btn active" data-mode="simple">
+                🧮 Prosty Kalkulator
+            </button>
+            <button class="mode-btn" data-mode="ai">
+                🤖 Analiza AI
+            </button>
+        </div>
+
+        <!-- Simple Calculator Section -->
+        <div class="section active" id="simpleSection">
+            <div class="simple-calc-grid">
+                <!-- Input Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-icon">📝</span>
+                        <h2 class="card-title">Dane pojazdu</h2>
+                    </div>
+
+                    <form id="simpleCalcForm">
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label>Koszt (EUR)</label>
+                                <input type="number" id="simpleCost" placeholder="1611" step="0.01" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Transport (EUR)</label>
+                                <input type="number" id="simpleTransport" placeholder="454" step="0.01" required>
+                            </div>
+                        </div>
+
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label>Kraj</label>
+                                <select id="simpleCountry" required>
+                                    <option value="">—</option>
+                                    <option value="AT|468">Austria</option>
+                                    <option value="BE|448">Belgia</option>
+                                    <option value="DE|448">Niemcy</option>
+                                    <option value="IT|628">Włochy</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Silnik (ccm)</label>
+                                <input type="number" id="simpleEngine" placeholder="1390" step="1">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Kurs EUR/PLN</label>
+                            <input type="number" id="simpleRate" value="4.22" step="0.0001" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Oblicz koszty</button>
+                    </form>
                 </div>
-                <div class="rate-input-group">
-                    <input type="number" id="manualRate" step="0.0001" placeholder="4.22" inputmode="decimal">
-                    <button type="button" id="updateRate">OK</button>
+
+                <!-- Results Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-icon">💰</span>
+                        <h2 class="card-title">Podsumowanie</h2>
+                    </div>
+
+                    <table class="results-table" id="simpleResults">
+                        <tr>
+                            <td>Pojazd</td>
+                            <td id="simpleResultCar">—</td>
+                        </tr>
+                        <tr>
+                            <td>Transport</td>
+                            <td id="simpleResultTransport">—</td>
+                        </tr>
+                        <tr>
+                            <td>Dokumenty</td>
+                            <td id="simpleResultDocs">—</td>
+                        </tr>
+                        <tr>
+                            <td>Akcyza</td>
+                            <td id="simpleResultExcise">—</td>
+                        </tr>
+                        <tr>
+                            <td>Dodatkowe</td>
+                            <td id="simpleResultAdditional">—</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td>RAZEM</td>
+                            <td id="simpleResultTotal">—</td>
+                        </tr>
+                    </table>
                 </div>
             </div>
+        </div>
 
-            <form id="calculatorForm">
-                <div class="card">
-                    <div class="card-title">Podstawowe</div>
-                    
-                    <div class="grid-2">
-                        <div class="form-group">
-                            <label>Koszt (EUR)</label>
-                            <input type="number" id="carCost" placeholder="1744" step="0.01" required inputmode="decimal">
-                        </div>
+        <!-- AI Analysis Section -->
+        <div class="section" id="aiSection">
+            <!-- API Config -->
+            <div class="api-config">
+                <div class="api-label">🔑 Klucz API OpenAI</div>
+                <input type="password" id="openaiKey" class="api-input" placeholder="sk-proj-...">
+            </div>
 
-                        <div class="form-group">
-                            <label>Transport (EUR)</label>
-                            <input type="number" id="transport" placeholder="537" step="0.01" required inputmode="decimal">
+            <!-- Upload Zone -->
+            <div class="upload-zone" id="uploadZone">
+                <div class="upload-icon">📸</div>
+                <div class="upload-text">Dodaj zdjęcia z AUTO1.com</div>
+                <div class="upload-hint">Kliknij lub przeciągnij | Telefon: kilka screenów | Desktop: 1 screen</div>
+                <input type="file" id="imageInput" accept="image/*" multiple class="hidden">
+            </div>
+
+            <!-- Thumbnails -->
+            <div class="thumbnails" id="thumbnails"></div>
+
+            <!-- Analyze Button -->
+            <button class="btn btn-primary" id="analyzeBtn" disabled>
+                🤖 Analizuj pojazd (AI)
+            </button>
+
+            <!-- Analyzing -->
+            <div class="analyzing" id="analyzing">
+                <div class="spinner"></div>
+                <div class="analyzing-text">Analizuję pojazd, rynek i generuję strategię...</div>
+            </div>
+
+            <!-- Results -->
+            <div class="analysis-results" id="analysisResults">
+                <!-- Left Column -->
+                <div>
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-icon">💰</span>
+                            <h2 class="card-title">Koszty Importu</h2>
                         </div>
+                        <table class="results-table">
+                            <tr>
+                                <td>Pojazd</td>
+                                <td id="aiCostCar">—</td>
+                            </tr>
+                            <tr>
+                                <td>Transport</td>
+                                <td id="aiCostTransport">—</td>
+                            </tr>
+                            <tr>
+                                <td>Dokumenty</td>
+                                <td id="aiCostDocs">—</td>
+                            </tr>
+                            <tr>
+                                <td>Akcyza</td>
+                                <td id="aiCostExcise">—</td>
+                            </tr>
+                            <tr>
+                                <td>Dodatkowe</td>
+                                <td id="aiCostAdditional">—</td>
+                            </tr>
+                            <tr class="total-row">
+                                <td>RAZEM</td>
+                                <td id="aiCostTotal">—</td>
+                            </tr>
+                        </table>
                     </div>
 
-                    <div class="grid-2">
-                        <div class="form-group">
-                            <label>Kraj</label>
-                            <select id="country" required>
-                                <option value="">—</option>
-                                <option value="AT|468">Austria (468)</option>
-                                <option value="BE|448">Belgia (448)</option>
-                                <option value="DE|448">Niemcy (448)</option>
-                                <option value="DK|408">Dania (408)</option>
-                                <option value="ES|534">Hiszpania (534)</option>
-                                <option value="FI|368">Finlandia (368)</option>
-                                <option value="FR|418">Francja (418)</option>
-                                <option value="IT|628">Włochy (628)</option>
-                                <option value="NL|474">Holandia (474)</option>
-                                <option value="PL|278">Polska (278)</option>
-                                <option value="PT|408">Portugalia (408)</option>
-                                <option value="SE|461">Szwecja (461)</option>
-                            </select>
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-icon">🚗</span>
+                            <h2 class="card-title">Dane pojazdu</h2>
                         </div>
-
-                        <div class="form-group">
-                            <label>Akcyza</label>
-                            <select id="exciseTax" required>
-                                <option value="">—</option>
-                                <option value="0.031">3.1%</option>
-                                <option value="0.185">18.5%</option>
-                            </select>
+                        <div class="info-grid">
+                            <div class="info-card">
+                                <div class="info-card-label">Model</div>
+                                <div class="info-card-value" id="aiVehicleModel" style="font-size: 1.125rem;">—</div>
+                            </div>
+                            <div class="info-card">
+                                <div class="info-card-label">Rok</div>
+                                <div class="info-card-value" id="aiVehicleYear">—</div>
+                            </div>
+                            <div class="info-card">
+                                <div class="info-card-label">Przebieg</div>
+                                <div class="info-card-value" id="aiVehicleMileage" style="font-size: 1.125rem;">—</div>
+                            </div>
+                            <div class="info-card">
+                                <div class="info-card-label">Silnik</div>
+                                <div class="info-card-value" id="aiVehicleEngine">—</div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="card">
-                    <div class="card-title">Dodatkowe (PLN)</div>
-                    
-                    <div class="grid-2">
-                        <div class="form-group">
-                            <label>Przegląd</label>
-                            <input type="number" id="inspection" value="149" step="0.01" inputmode="decimal">
+                <!-- Right Column -->
+                <div>
+                    <div class="recommendation-box">
+                        <div class="recommendation-header">
+                            <span>💡</span>
+                            <span>Rekomendacja</span>
                         </div>
-
-                        <div class="form-group">
-                            <label>Ubezpieczenie</label>
-                            <input type="number" id="insurance" value="98" step="0.01" inputmode="decimal">
-                        </div>
-
-                        <div class="form-group">
-                            <label>Rejestracja</label>
-                            <input type="number" id="registration" value="162.5" step="0.01" inputmode="decimal">
-                        </div>
-
-                        <div class="form-group">
-                            <label>Pranie</label>
-                            <input type="number" id="cleaning" value="250" step="0.01" inputmode="decimal">
-                        </div>
-
-                        <div class="form-group">
-                            <label>Naprawy</label>
-                            <input type="number" id="repairs" value="0" step="0.01" inputmode="decimal">
-                        </div>
-
-                        <div class="form-group">
-                            <label>Inne wydatki</label>
-                            <input type="number" id="other" value="0" step="0.01" inputmode="decimal">
-                        </div>
-                    </div>
-                </div>
-
-                <button type="submit" class="btn-primary">Oblicz koszty</button>
-            </form>
-
-            <div id="results" class="results">
-                <div class="card">
-                    <div class="card-title">Podsumowanie</div>
-                    
-                    <div class="result-row">
-                        <span class="result-label">Pojazd</span>
-                        <span class="result-value" id="resultCarCost">—</span>
-                    </div>
-                    
-                    <div class="result-row">
-                        <span class="result-label">Dokumenty</span>
-                        <span class="result-value" id="resultCountryCost">—</span>
-                    </div>
-                    
-                    <div class="result-row">
-                        <span class="result-label">Transport</span>
-                        <span class="result-value" id="resultTransport">—</span>
-                    </div>
-                    
-                    <div class="result-row">
-                        <span class="result-label">Akcyza</span>
-                        <span class="result-value" id="resultExcise">—</span>
-                    </div>
-                    
-                    <div class="result-row">
-                        <span class="result-label">Dodatkowe</span>
-                        <span class="result-value" id="resultAdditional">—</span>
+                        <div class="recommendation-text" id="aiRecommendation">—</div>
                     </div>
 
-                    <div class="result-total result-row">
-                        <span class="result-label">Razem</span>
-                        <span class="result-value" id="resultTotal">—</span>
+                    <div class="price-display">
+                        <div class="price-label">Szacowana cena sprzedaży</div>
+                        <div class="price-value" id="aiSalePrice">—</div>
+                        <div class="profit-badge" id="aiProfit">—</div>
+                    </div>
+
+                    <div class="card">
+                        <div class="section-block">
+                            <div class="section-header">
+                                <span>⏱️</span>
+                                <span>Ocena Rotacji</span>
+                            </div>
+                            <div class="section-content" id="aiTurnover">—</div>
+                        </div>
+
+                        <div class="section-block">
+                            <div class="section-header">
+                                <span>✅</span>
+                                <span>Plusy</span>
+                            </div>
+                            <div class="section-content" id="aiPros">—</div>
+                        </div>
+
+                        <div class="section-block">
+                            <div class="section-header">
+                                <span>⚠️</span>
+                                <span>Minusy / Ryzyka</span>
+                            </div>
+                            <div class="section-content" id="aiCons">—</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-icon">🎯</span>
+                            <h2 class="card-title">Strategia Sprzedaży</h2>
+                        </div>
+                        <div class="strategy-grid" id="strategyGrid"></div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="app.js"></script>
+    <script src="app-final.js"></script>
 </body>
 </html>
